@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# images and annotations
+train_annotations/
+train_images/
+
 # IDE
 .idea
 idea/
