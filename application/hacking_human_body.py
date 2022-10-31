@@ -53,7 +53,7 @@ with dataset:
         'Los organos provistos para el análisis son: riñón, pulmón, bazo, intestino grueso y próstata.')
 
     # read the dataset
-    data = pd.read_csv('../train.csv', index_col='id')
+    data = pd.read_csv('hacking-the-human-body/blob/e106d05702a9cff0a1d0712a48bedc9cca2f6bb8/train.csv', index_col='id')
     kidneys = data[data.organ == 'kidney'].count()['organ']
     lungs = data[data.organ == 'lung'].count()['organ']
     spleen = data[data.organ == 'spleen'].count()['organ']
