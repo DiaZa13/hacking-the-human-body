@@ -9,8 +9,8 @@ from segmentation_models.metrics import iou_score
 from segmentation_models.losses import bce_jaccard_loss
 
 # constants
-IMG_PATH = '../images/'
-MASK_PATH = '../masks/'
+IMG_PATH = 'images/'
+MASK_PATH = 'masks/'
 plt.rcParams['figure.figsize'] = (15, 15)
 
 # page configuration
