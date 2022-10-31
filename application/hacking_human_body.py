@@ -23,7 +23,7 @@ models = st.container()
 
 with header:
     st.title('Hacking the Human Body - Finding FTU´s')
-    st.caption('Source code [Covid Evolution Analyzer](https://www.linkedin.com/in/tim-denzler/)')
+    st.caption('Source code [Hacking The Human Body](https://github.com/DiaZa13/hacking-the-human-body)')
     # description of the analyzer and COVID-19
     st.markdown(
         'El ser humano es en la actualidad uno de los seres vivos multicelulares más complejos, con más de 37 billones de células, las cuales son la unidad'
