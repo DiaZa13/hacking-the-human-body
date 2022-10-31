@@ -2,11 +2,15 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from Models import masks_cells, get_cells
+from PIL import Image
+from Models import masks_cells, get_cells, compare, compare_predictions
+from tensorflow.keras import models as keras_models
+from segmentation_models.metrics import iou_score
+from segmentation_models.losses import bce_jaccard_loss
 
 # constants
-IMG_PATH = 'images/'
-MASK_PATH = 'masks/'
+IMG_PATH = '../images/'
+MASK_PATH = '../masks/'
 plt.rcParams['figure.figsize'] = (15, 15)
 
 # page configuration
@@ -49,7 +53,7 @@ with dataset:
         'Los organos provistos para el análisis son: riñón, pulmón, bazo, intestino grueso y próstata.')
 
     # read the dataset
-    data = pd.read_csv('train.csv', index_col='id')
+    data = pd.read_csv('../train.csv', index_col='id')
     kidneys = data[data.organ == 'kidney'].count()['organ']
     lungs = data[data.organ == 'lung'].count()['organ']
     spleen = data[data.organ == 'spleen'].count()['organ']
@@ -91,14 +95,44 @@ with models:
     st.header("Predicción de Unidades de tejido funcional ")
     # description
     st.markdown(
-        'A continuación se presentan 3 modelos desarrollados con diversas tecnologías, los cuales proveen una predicción sobre las unidades de tejido funcional'
+        'A continuación se presentan 3 modelos desarrollados con diversas arquitecturas, los cuales proveen una predicción sobre las unidades de tejido funcional'
         'en una célula en formato de imagen la cual puedes subir mediante el siguiente apartado')
 
+    # load the models
+    # classic unet
+    classic_unet = keras_models.load_model('../models/unet_model_2.0.h5', custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
+    # segmentation unet
+    segmentation_unet = keras_models.load_model('../models/unet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
+    # linknet
+    linknet_model = keras_models.load_model('../models/linknet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
+
+    predictions = ['676.png', '737.png']
     see_data = st.expander('Haz click para observar los resultados de entrenamiento 👇')
     with see_data:
         # poner los valores de accuracy obtenido por cada uno y unas dos imágenes para comparar
-        # st.dataframe(data=covid_data.reset_index(drop=True))
-        st.markdown('test')
+        # gráficos interactivos
+        # specs de los modelos
+        st.markdown('## Classic UNet')
+        classic_unet.summary()
+        st.markdown('IoU Score: 28.91%%')
+        # classic_unet.evaluate(test, labels, verbose=1)
+        fig = compare_predictions(classic_unet, predictions, 2, 0.2, IMG_PATH, MASK_PATH)
+        st.pyplot(fig)
+
+        st.markdown('## Segmentation UNet')
+        segmentation_unet.summary()
+        st.markdown('IoU Score: 64.11%')
+        # segmentation_unet.evaluate(test, labels, verbose=1)
+        fig = compare_predictions(segmentation_unet, predictions, 2, 0.6, IMG_PATH, MASK_PATH)
+        st.pyplot(fig)
+
+        st.markdown('### LinkNet')
+        linknet_model.summary()
+        st.markdown('IoU Score: 66.13%')
+        # linknet_model.evaluate(test, labels, verbose=1)
+        fig = compare_predictions(classic_unet, predictions, 2, 0.5, IMG_PATH, MASK_PATH)
+        st.pyplot(fig)
+
     st.text('')
 
     uploaded_img = st.file_uploader('Choose a file', type=['png', 'jpg', 'tiff'])
@@ -106,8 +140,15 @@ with models:
     unet, segment_unet, linknet = st.tabs(['🔎 Classic UNet', '🔬 Segment Models UNet ', '🔭 LinkNet'])
 
     if uploaded_img is not None:
-        # predicciones con modelos
-        # unet.line_chart(data=evolution, x=time, y='new_cases')
-        # segment_unet.line_chart(data=evolution, x=time, y='new_deaths')
-        # linknet.line_chart(data=evolution, x=time, y='new_recovered')
-        st.markdown('otro test')
+        img = Image.open(uploaded_img)
+
+        # make predictions
+        with unet:
+            cu_mask = compare(classic_unet, img, 0.2)
+            st.pyplot(cu_mask)
+        with segment_unet:
+            su_mask = compare(segmentation_unet, img, 0.4)
+            st.pyplot(su_mask)
+        with linknet:
+            lk_mask = compare(linknet_model, img, 0.5)
+            st.pyplot(lk_mask)
