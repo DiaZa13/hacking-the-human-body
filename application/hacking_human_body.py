@@ -11,6 +11,7 @@ from segmentation_models.losses import bce_jaccard_loss
 # constants
 IMG_PATH = 'images/'
 MASK_PATH = 'masks/'
+MODELS_PATH = 'models/'
 plt.rcParams['figure.figsize'] = (15, 15)
 
 # page configuration
@@ -100,11 +101,11 @@ with models:
 
     # load the models
     # classic unet
-    classic_unet = keras_models.load_model('../models/unet_model_2.0.h5', custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
+    classic_unet = keras_models.load_model(MODELS_PATH + 'unet_model_2.0.h5', custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
     # segmentation unet
-    segmentation_unet = keras_models.load_model('../models/unet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
+    segmentation_unet = keras_models.load_model(MODELS_PATH + 'unet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
     # linknet
-    linknet_model = keras_models.load_model('../models/linknet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
+    linknet_model = keras_models.load_model(MODELS_PATH + 'linknet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
 
     predictions = ['676.png', '737.png']
     see_data = st.expander('Haz click para observar los resultados de entrenamiento 👇')
