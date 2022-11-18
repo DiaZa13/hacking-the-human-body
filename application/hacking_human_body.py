@@ -3,10 +3,12 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
-from Models import masks_cells, get_cells, compare, compare_predictions
 from tensorflow.keras import models as keras_models
 from segmentation_models.metrics import iou_score
 from segmentation_models.losses import bce_jaccard_loss
+import plotly.express as px
+import plotly.graph_objs as go
+from Models import masks_cells, get_cells, compare, compare_predictions, interactive_history_plot
 import numpy as np
 
 # constants
@@ -87,6 +89,14 @@ with dataset:
         str_shots = "💧 "+ str(prostate)+ " Próstatas"
         st.markdown(str_shots)
 
+    fig = px.histogram(data_frame=data, x='organ', color='sex',
+                       title='Figura 1. Distribución de los órganos disponibles para análisis separados por sexo')
+    fig.update_layout(
+        font_family="Balto",
+        title_font_family="Times New Roman",
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
     st.markdown("")
 
     # cells and its respective masks
@@ -110,19 +120,19 @@ with models:
 
     predictions = ['676.png', '435.png']
     see_data = st.expander('Haz click para observar los resultados de entrenamiento 👇')
-    with see_data:
-        # gráficos interactivos
-        # history = np.load('../record_train/cunet_ep5_history.npy', allow_pickle=True).item()
-        # history = pd.DataFrame(history)
-        # st.write(history)
 
+    with see_data:
         # specs de los modelos
         st.markdown('## Classic UNet')
         classic_unet.summary()
         st.markdown('IoU Score: 28.91%')
         # classic_unet.evaluate(test, labels, verbose=1)
-        fig = compare_predictions(classic_unet, predictions, 2, 0.15, IMG_PATH, MASK_PATH)
-        st.pyplot(fig)
+        figure = compare_predictions(classic_unet, predictions, 2, 0.15, IMG_PATH, MASK_PATH)
+        st.pyplot(figure)
+        # interactive graph
+        history = np.load('../record_train/cunet_ep50_history.npy', allow_pickle='TRUE').item()
+        fig = interactive_history_plot(history, 'Classic Unet with 50 Epochs')
+        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown('## Segmentation UNet')
         segmentation_unet.summary()
@@ -130,6 +140,10 @@ with models:
         # segmentation_unet.evaluate(test, labels, verbose=1)
         fig = compare_predictions(segmentation_unet, predictions, 2, 0.6, IMG_PATH, MASK_PATH)
         st.pyplot(fig)
+        # interactive graph
+        history = np.load('../record_train/sunet_ep30_history2.npy', allow_pickle='TRUE').item()
+        fig = interactive_history_plot(history, 'Segmentation Models Unet with 30 Epochs')
+        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown('### LinkNet')
         linknet_model.summary()
@@ -137,6 +151,10 @@ with models:
         # linknet_model.evaluate(test, labels, verbose=1)
         fig = compare_predictions(linknet_model, predictions, 2, 0.5, IMG_PATH, MASK_PATH)
         st.pyplot(fig)
+        # interactive graph
+        history = np.load('../record_train/linknet_history.npy', allow_pickle='TRUE').item()
+        fig = interactive_history_plot(history, 'Segmentations Models LinkNet with 30 Epochs')
+        st.plotly_chart(fig, use_container_width=True)
 
     st.text('')
 

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from skimage import io
 import streamlit as st
 from PIL import Image
-
+import plotly.graph_objs as go
 
 SEED = 197535
 IMG_SIZE = 256
@@ -69,7 +69,7 @@ def compare(segmentation_model, img, treshold):
     return fig
 
 
-def compare_predictions(segmentation_model, data, loop: int, treshold: float, src_path:str, mask_path: str):
+def compare_predictions(segmentation_model, data, loop: int, treshold: float, src_path: str, mask_path: str):
     fig, ax = plt.subplots(loop, 3, figsize=(15, 8))
     for x in range(loop):
         img = Image.open(src_path + data[x])
@@ -80,5 +80,61 @@ def compare_predictions(segmentation_model, data, loop: int, treshold: float, sr
         ax[x][0].imshow(img[0, :, :, ])
         ax[x][1].imshow(mask, cmap='inferno')
         ax[x][2].imshow(prediction[0, :, :, ], cmap='inferno')
+
+    return fig
+
+
+def interactive_history_plot(history, model_name, metrics=['iou_score', 'val_iou_score'], loss=['loss', 'val_loss']):
+    train_metric = history[metrics[0]]
+    val_metric = history[metrics[1]]
+    train_loss = history[loss[0]]
+    val_loss = history[loss[1]]
+
+    epochs = range(1, len(train_metric) + 1)
+
+    fig = go.Figure([
+        go.Scatter(
+            name='train_acc',
+            x=np.array(epochs),
+            y=train_metric,
+            mode='lines',
+            marker=dict(color='blue', size=2),
+            showlegend=True
+        ),
+        go.Scatter(
+            name='val_acc',
+            x=np.array(epochs),
+            y=val_metric,
+            mode='lines',
+            marker=dict(color="blue"),
+            line=dict(width=1),
+            showlegend=True
+        ),
+        go.Scatter(
+            name='train_loss',
+            x=np.array(epochs),
+            y=train_loss,
+            mode='lines',
+            marker=dict(color='orange', size=2),
+            showlegend=True
+        ),
+        go.Scatter(
+            name='val_loss',
+            x=np.array(epochs),
+            y=val_loss,
+            mode='lines',
+            marker=dict(color="orange"),
+            line=dict(width=1),
+            showlegend=True
+        ),
+    ])
+
+    fig.update_layout(
+        yaxis_title='Épocas',
+        title='Training and validation score and loss in ' + model_name,
+        hovermode="x",
+        font_family="Balto",
+        title_font_family="Times New Roman",
+    )
 
     return fig
