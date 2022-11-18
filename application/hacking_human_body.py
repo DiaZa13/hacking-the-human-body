@@ -7,11 +7,12 @@ from Models import masks_cells, get_cells, compare, compare_predictions
 from tensorflow.keras import models as keras_models
 from segmentation_models.metrics import iou_score
 from segmentation_models.losses import bce_jaccard_loss
+import numpy as np
 
 # constants
-IMG_PATH = 'images/'
-MASK_PATH = 'masks/'
-MODELS_PATH = 'models/'
+IMG_PATH = '../images/'
+MASK_PATH = '../masks/'
+MODELS_PATH = '../models/'
 plt.rcParams['figure.figsize'] = (15, 15)
 
 # page configuration
@@ -54,7 +55,7 @@ with dataset:
         'Los organos provistos para el análisis son: riñón, pulmón, bazo, intestino grueso y próstata.')
 
     # read the dataset
-    data = pd.read_csv('train.csv', index_col='id')
+    data = pd.read_csv('../train.csv', index_col='id')
     kidneys = data[data.organ == 'kidney'].count()['organ']
     lungs = data[data.organ == 'lung'].count()['organ']
     spleen = data[data.organ == 'spleen'].count()['organ']
@@ -107,17 +108,20 @@ with models:
     # linknet
     linknet_model = keras_models.load_model(MODELS_PATH + 'linknet_segment_model_2.0.h5',custom_objects={"iou_score": iou_score,'binary_crossentropy_plus_jaccard_loss': bce_jaccard_loss})
 
-    predictions = ['676.png', '737.png']
+    predictions = ['676.png', '435.png']
     see_data = st.expander('Haz click para observar los resultados de entrenamiento 👇')
     with see_data:
-        # poner los valores de accuracy obtenido por cada uno y unas dos imágenes para comparar
         # gráficos interactivos
+        # history = np.load('../record_train/cunet_ep5_history.npy', allow_pickle=True).item()
+        # history = pd.DataFrame(history)
+        # st.write(history)
+
         # specs de los modelos
         st.markdown('## Classic UNet')
         classic_unet.summary()
-        st.markdown('IoU Score: 28.91%%')
+        st.markdown('IoU Score: 28.91%')
         # classic_unet.evaluate(test, labels, verbose=1)
-        fig = compare_predictions(classic_unet, predictions, 2, 0.2, IMG_PATH, MASK_PATH)
+        fig = compare_predictions(classic_unet, predictions, 2, 0.15, IMG_PATH, MASK_PATH)
         st.pyplot(fig)
 
         st.markdown('## Segmentation UNet')
@@ -131,7 +135,7 @@ with models:
         linknet_model.summary()
         st.markdown('IoU Score: 66.13%')
         # linknet_model.evaluate(test, labels, verbose=1)
-        fig = compare_predictions(classic_unet, predictions, 2, 0.5, IMG_PATH, MASK_PATH)
+        fig = compare_predictions(linknet_model, predictions, 2, 0.5, IMG_PATH, MASK_PATH)
         st.pyplot(fig)
 
     st.text('')

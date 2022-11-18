@@ -59,26 +59,26 @@ def prediction_preprocess(image):
 
 
 def compare(segmentation_model, img, treshold):
-    fig, ax = plt.subplots(1, 2, figsize=(25, 25))
+    fig, ax = plt.subplots(1, 2, figsize=(15, 8))
     img = prediction_preprocess(img)
     prediction = segmentation_model.predict(img)
     prediction = (prediction > treshold).astype(np.uint8)
     ax[0].imshow(img[0, :, :, ])
-    ax[1].imshow(prediction[0, :, :, ], cmap='gray')
+    ax[1].imshow(prediction[0, :, :, ], cmap='inferno')
 
     return fig
 
 
 def compare_predictions(segmentation_model, data, loop: int, treshold: float, src_path:str, mask_path: str):
-    fig, ax = plt.subplots(loop, 3, figsize=(25, 25))
+    fig, ax = plt.subplots(loop, 3, figsize=(15, 8))
     for x in range(loop):
         img = Image.open(src_path + data[x])
-        img = test_preprocess(img)
+        img = prediction_preprocess(img)
         mask = Image.open(mask_path + data[x])
         prediction = segmentation_model.predict(img)
         prediction = (prediction > treshold).astype(np.uint8)
         ax[x][0].imshow(img[0, :, :, ])
-        ax[x][1].imshow(mask, cmap='gray')
-        ax[x][2].imshow(prediction[0, :, :, ], cmap='gray')
+        ax[x][1].imshow(mask, cmap='inferno')
+        ax[x][2].imshow(prediction[0, :, :, ], cmap='inferno')
 
     return fig
